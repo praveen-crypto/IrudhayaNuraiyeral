@@ -1,0 +1,75 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+
+    <file>images/artery tree images/abdominal_aorta.jpg</file>
+    <file>images/artery tree images/aortic_arch.jpg</file>
+    <file>images/artery tree images/art_tree_img.jpg</file>
+    <file>images/artery tree images/ascending_aorta.jpg</file>
+    <file>images/artery tree images/brachial_left.jpg</file>
+    <file>images/artery tree images/brachial_right.jpg</file>
+    <file>images/artery tree images/cereberal_artery_left.jpg</file>
+    <file>images/artery tree images/cereberal_artery_right.jpg</file>
+    <file>images/artery tree images/common_carotid_left.jpg</file>
+    <file>images/artery tree images/common_carotid_right.jpg</file>
+    <file>images/artery tree images/femoral_left.jpg</file>
+    <file>images/artery tree images/femoral_right.jpg</file>
+    <file>images/artery tree images/hepatic_artery.jpg</file>
+    <file>images/artery tree images/radial_left.jpg</file>
+    <file>images/artery tree images/radial_right.jpg</file>
+    <file>images/artery tree images/renal_artery.jpg</file>
+    <file>images/artery tree images/subclavian_left.jpg</file>
+    <file>images/artery tree images/subclavian_right.jpg</file>
+    <file>images/artery tree images/thoracic_aorta.jpg</file>
+    <file>images/artery tree images/ulnar_left.jpg</file>
+    <file>images/artery tree images/ulnar_right.jpg</file>
+
+    <file>images/aorta.jpg</file>
+    <file>images/aortic_valve_E.png</file>
+    <file>images/aortic_valve.jpg</file>
+    <file>images/chambers.jpg</file>
+    <file>images/heart.jpg</file>
+    <file>images/Homebutton1.png</file>
+    <file>images/Homebutton2.png</file>
+    <file>images/Homebutton3.png</file>
+    <file>images/homelogo.jpg</file>
+    <file>images/homelogo.png</file>
+    <file>images/iandolets.jpg</file>
+    <file>images/icon.jpg</file>    
+    <file>images/left_atrium.jpg</file>
+    <file>images/left_atrium_E.jpg</file>
+    <file>images/left_ventricle.jpg</file>
+    <file>images/left_ventricle_E.jpg</file>
+    <file>images/logo.jpg</file>
+    <file>images/mitral_valve.jpg</file>
+    <file>images/mitral_valve_E.png</file>
+    <file>images/original.jpg</file>
+    <file>images/pulmonary_artery.jpg</file>
+    <file>images/pulmonary_valve.jpg</file>
+    <file>images/pulmonary_valve_E.png</file>
+    <file>images/pulmonary_vein.jpg</file>
+    <file>images/right_atrium.jpg</file>
+    <file>images/right_atrium_E.jpg</file>
+    <file>images/right_ventricle.jpg</file>
+    <file>images/right_ventricle_E.jpg</file>
+    <file>images/title.jpeg</file>
+    <file>images/tricuspid_valve.jpg</file>
+    <file>images/tricuspid_valve_E.png</file>
+    <file>images/valves.jpg</file>
+    <file>images/vena_cava.jpg</file>
+
+    <file>tutorial/1.jpg</file>
+    <file>tutorial/2.jpg</file>
+    <file>tutorial/3.jpg</file>
+    <file>tutorial/4.jpg</file>
+    <file>tutorial/5.jpg</file>
+    <file>tutorial/6.jpg</file>
+    <file>tutorial/7.jpg</file>
+    <file>tutorial/8.jpg</file>
+    <file>tutorial/9.jpg</file>
+    <file>tutorial/10.jpg</file>
+
+    <file>BloodSim.ico</file>
+    
+    
+</qresource>
+</RCC>
