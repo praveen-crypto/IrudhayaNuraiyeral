@@ -39,11 +39,14 @@ def calc(HR, PF):
         # initial value
         pulse_initial = np.zeros(2)
         pulse_generator = lambda t, x: odes.pulsegen(t, x, R1, L, R2, C, clock, it)  # input for solver function
+
         t, x = r_k.rungekutta4(pulse_generator, pulse_initial, st, et, dt)
         pu = it.transpose()  # plotting the output
         pulse = (pu - x[0, :]) * R1 + x[1, :]
         system_initial = np.zeros(256)
+
         system_finder = lambda t, x: odes.integrated_ode(t, x, pulse, clock)
+        
         sol = solve_ivp(system_finder, [st, et], system_initial, method='Radau', t_eval=np.arange(st, et, dt))
         to = sol.t
         xo = sol.y
@@ -52,3 +55,7 @@ def calc(HR, PF):
         return t, x
     except:
         return -1, -10000
+
+
+
+

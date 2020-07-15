@@ -6,6 +6,7 @@ def rungekutta4(f, x0, t0, tf, dt):
 
     t = np.arange(t0, tf, dt)
     nt = t.size
+    #nt = len(t)
 
     nx = x0.size
     x = np.zeros((nx, nt))
@@ -19,6 +20,7 @@ def rungekutta4(f, x0, t0, tf, dt):
         k3 = np.multiply(dt, f(t[k] + dt/2, x[:, k] + k2/2))
         k4 = np.multiply(dt, f(t[k] + dt, x[:, k] + k3))
 
+        #dx = dx + (1.0/6.0)*()
         test0 = k1
         test1 = 2 * k2
         test2 = 2 * k3
@@ -32,3 +34,8 @@ def rungekutta4(f, x0, t0, tf, dt):
         x[:, k+1] = x[:, k] + dx
 
     return t, x
+
+if __name__ == '__main__':
+    t, x = rungekutta4([5,2], 0,1,2,0.2)
+    print(t)
+    print("\n",x)

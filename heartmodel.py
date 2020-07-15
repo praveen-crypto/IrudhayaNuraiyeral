@@ -6,12 +6,29 @@ The side functions are dfined first and the main function where the simulation
 is done is described last
 
 '''
-
 # Importing the necessary library files
 import numpy as np
 
+Aav, Amv, Apv, Atv, Gpw = 0
+Elaa, Elab, Elva, Elvb, Eraa, Erab, Erva, Ervb, Epua, Epuc, Epuv, Epwa, Epwc, Epwv = 0
+yav, ymv, ypv, ytv, ypua, ypuc, ypuv, ypwa, ypwc, ypwv = 0
+Ra, Raa, Rav, Rca, Rda, Rmv, Rpua, Rpuc, Rpuv, Rpv, Rpwa, Rpwc, Rpwv, Rtv, Rv, Rvc, bav, bmv, bpv, btv = 0
+Spua, Spuc, Spuv, Spwa, Spwc, Spwv = 0
+Zpua, Zpuc, Zpuv, Zpwa, Zpwc, Zpwv = 0
+Caor, Cart, Ccap, Cven, Cvca=0
+yaor, yart, ycap, yven, yvca=0
+Raor, Rart, Rcap, Rv, Rvc=0
+Saor, Sart, Scap, Sven, Svca =0
+dvq, P_0d =0
+dv, v, dq, q=0
+elv, ela, erv, era, cklr, ckrl, plv, prv, Sla, Slv, Sra, Srv, ppp, ppc, pit, qco, FL, FR1, STR=0
+Rav0, Rmv0, Rpv0, Rtv0, bav0, bmv0, bpv0, btv0, Rav1, Rmv1, Rpv1, Rtv1, bav1, bmv1, bpv1, btv1=0
+Rav2, Rmv2, Rpv2, Rtv2, bav2, bmv2, bpv2, btv2, yav0, ymv0, ypv0, ytv0, yav1, ymv1, ypv1, ytv1, yav2, ymv2, ypv2, ytv2=0
+n_val, m_cvst, m_cvrg, n_vrg=0
+timestep, Tduration, ddt, tee, tcr, tac, tar, t, odic=0
 # MAIN FUNCTION TO SOLVE THE SYSTEM OF ODEs
 def lumped(HR, ncyc, dt, *param):
+    
     def Integrated_ode():
         global Aav, Amv, Apv, Atv, Gpw
         global Epua, Epuc, Epuv, Epwc, Epwv
@@ -98,9 +115,11 @@ def lumped(HR, ncyc, dt, *param):
         P_0d[0, 26] = v[0, 13] / Ccap + Scap * dv[0, 13]  # Capillary Pressure
         dvq[0, 28] = (v[0, 13] / Ccap + Scap * dv[0, 13] - q[0, 14] * Rcap - v[0, 0] / Cven - Sven * dv[
             0, 0]) / ycap  # Capillary Pressure
+    
     def Ecal(EEE, ZZZ, vol):
         EcalR = EEE * np.exp(vol / ZZZ)
         return EcalR
+    
     def Lvecal():
         global Elva, Elvb
         global elv, FL
@@ -113,6 +132,7 @@ def lumped(HR, ncyc, dt, *param):
                 elv = FL * Elva * 0.5 * (1.0 + np.cos(3.1415926 * (tcal - tee) / (0.5 * tee))) + Elvb / FL
             else:
                 elv = Elvb / FL
+    
     def Laecal():
         global tcr, ela, Elaa, tac, tar, Tduration, Elab
         tcal = tcr
@@ -128,6 +148,7 @@ def lumped(HR, ncyc, dt, *param):
         # c if (tcal > tar. and.tcal <= (tar+teer)) then
         if (tcal > tar and tcal <= Tduration):
             ela = Elaa * 0.5 * (1.0 + np.cos(3.1415926 * (tcal - tar) / teer)) + Elab
+    
     def Rvecal():
         global tcr, FR1, Erva, tee, Ervb
         global erv
@@ -139,6 +160,7 @@ def lumped(HR, ncyc, dt, *param):
                 erv = FR1 * Erva * 0.5 * (1.0 + np.cos(2.0 * 3.1415926 * (tcal - tee) / tee)) + Ervb / FR1
             else:
                 erv = Ervb / FR1
+    
     def Raecal():
         global Eraa, Erab
         global tar, tac, tcr
@@ -155,6 +177,7 @@ def lumped(HR, ncyc, dt, *param):
             era = Eraa * 0.5 * (1.0 - np.cos(3.1415926 * (tcal - tac) / teec)) + Erab
         if tcal > tar and tcal <= Tduration:
             era = Eraa * 0.5 * (1.0 + np.cos(3.1415926 * (tcal - tar) / teer)) + Erab
+    
     def AAav():
         global Caor, dv, v
         global plv, Slv, ppc
@@ -164,6 +187,7 @@ def lumped(HR, ncyc, dt, *param):
         else:
             AAav = 0.0
         return AAav
+    
     def AAmv():
         global v, ela, plv
         intee = ela * v[0, 9] - plv
@@ -172,6 +196,7 @@ def lumped(HR, ncyc, dt, *param):
         else:
             AAmv = 0.0
         return AAmv
+    
     def AApv():
         global Epua, Zpua, prv
         intee = prv - Epua * Zpua
@@ -180,6 +205,7 @@ def lumped(HR, ncyc, dt, *param):
         else:
             AApv = 0.0
         return AApv
+    
     def AAtv():
         global era, v, prv
         intee = era * v[0, 2] - prv
@@ -188,6 +214,7 @@ def lumped(HR, ncyc, dt, *param):
         else:
             AAtv = 0.0
         return AAtv
+    
     def cardiac_state(subresultcr):
         global Aav, Amv, Apv, Atv, dvq
         global dv, v, dq, q, ddt
@@ -205,7 +232,7 @@ def lumped(HR, ncyc, dt, *param):
         dq[0, 7:15] = dfl[0, 14:29:2]
         dv[0, :7] = dfl[0, 0:13:2]
         dv[0, 7:14] = dfl[0, 15:28:2]
-        for nrk in np.arange(4):
+        for nrk in range(4):
             subrukuk[nrk, :29] = np.multiply(ddt, dfl[0, :29])
             if nrk == 0:
                 Aav = AAav()
@@ -224,21 +251,22 @@ def lumped(HR, ncyc, dt, *param):
         v[0, 7:14] = newpara[0, 15:28:2]
         return subrukuk
     # End of function definition ----------------------------------
-    global valve, Aav, Amv, Apv, Atv, Gpw
-    global E_cardiopul, Elaa, Elab, Elva, Elvb, Eraa, Erab, Erva, Ervb, Epua, Epuc, Epuv, Epwa, Epwc, Epwv
-    global yL_cardiopul, yav, ymv, ypv, ytv, ypua, ypuc, ypuv, ypwa, ypwc, ypwv
-    global R_cardiopul, Ra, Raa, Rav, Rca, Rda, Rmv, Rpua, Rpuc, Rpuv, Rpv, Rpwa, Rpwc, Rpwv, Rtv, Rv, Rvc, bav, bmv, bpv, btv
-    global S_cardiopul, Spua, Spuc, Spuv, Spwa, Spwc, Spwv
-    global Z_cardiopul, Zpua, Zpuc, Zpuv, Zpwa, Zpwc, Zpwv
-    global C_peripheral, Caor, Cart, Ccap, Cven, Cvca
-    global yL_peripheral, yaor, yart, ycap, yven, yvca
-    global R_peripheral, Raor, Rart, Rcap, Rv, Rvc
-    global S_peripheral, Saor, Sart, Scap, Sven, Svca
-    global sdvsdqdvdq, dvq, P_0d
-    global dvdq_cardiopul, dv, v, dq, q
-    global cardiac_parameter, elv, ela, erv, era, cklr, ckrl, plv, prv, Sla, Slv, Sra, Srv, ppp, ppc, pit, qco, FL, FR1, STR
-    global R_cardiopulc, Rav0, Rmv0, Rpv0, Rtv0, bav0, bmv0, bpv0, btv0, Rav1, Rmv1, Rpv1, Rtv1, bav1, bmv1, bpv1, btv1
-    global Rav2, Rmv2, Rpv2, Rtv2, bav2, bmv2, bpv2, btv2, yav0, ymv0, ypv0, ytv0, yav1, ymv1, ypv1, ytv1, yav2, ymv2, ypv2, ytv2
+    
+    global Aav, Amv, Apv, Atv, Gpw                        # valve, 
+    global Elaa, Elab, Elva, Elvb, Eraa, Erab, Erva, Ervb, Epua, Epuc, Epuv, Epwa, Epwc, Epwv # E_cardiopul,
+    global yav, ymv, ypv, ytv, ypua, ypuc, ypuv, ypwa, ypwc, ypwv # yL_cardiopul,
+    global Ra, Raa, Rav, Rca, Rda, Rmv, Rpua, Rpuc, Rpuv, Rpv, Rpwa, Rpwc, Rpwv, Rtv, Rv, Rvc, bav, bmv, bpv, btv # R_cardiopul,
+    global Spua, Spuc, Spuv, Spwa, Spwc, Spwv            # S_cardiopul,
+    global  Zpua, Zpuc, Zpuv, Zpwa, Zpwc, Zpwv           # Z_cardiopul,
+    global  Caor, Cart, Ccap, Cven, Cvca                 #
+    global  yaor, yart, ycap, yven, yvca                 # yL_peripheral,
+    global  Raor, Rart, Rcap, Rv, Rvc                    # R_peripheral,
+    global  Saor, Sart, Scap, Sven, Svca                 # S_peripheral,
+    global  dvq, P_0d                                    # sdvsdqdvdq
+    global  dv, v, dq, q                                 # dvdq_cardiopul,
+    global  elv, ela, erv, era, cklr, ckrl, plv, prv, Sla, Slv, Sra, Srv, ppp, ppc, pit, qco, FL, FR1, STR # cardiac_parameter,
+    global  Rav0, Rmv0, Rpv0, Rtv0, bav0, bmv0, bpv0, btv0, Rav1, Rmv1, Rpv1, Rtv1, bav1, bmv1, bpv1, btv1 # R_cardiopulc,
+    global Rav2, Rmv2, Rpv2, Rtv2, bav2, bmv2, bpv2, btv2, yav0, ymv0, ypv0, ytv0, yav1, ymv1, ypv1, ytv1, yav2, ymv2, ypv2, ytv2#
     global n_val, m_cvst, m_cvrg, n_vrg
     global timestep, Tduration, ddt, tee, tcr, tac, tar, t, odic
     v = np.zeros(shape=(2, 14))
@@ -359,7 +387,7 @@ def lumped(HR, ncyc, dt, *param):
     ntotal = (ncycle * Tduration / dt)
     ntotal = int(ntotal)
     # ------------------------------------------------------------------------
-    for nstep in np.arange(ntotal):
+    for nstep in range(ntotal):
         if nstep == 0:
             tcr = 0.0
             ppc = 0.0

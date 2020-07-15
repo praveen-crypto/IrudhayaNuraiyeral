@@ -1,6 +1,25 @@
 import numpy as np
 
 
+valve, Aav, Amv, Apv, Atv, Gpw = np.zeros(6)
+E_cardiopul, Elaa, Elab, Elva, Elvb, Eraa, Erab, Erva, Ervb, Epua, Epuc, Epuv, Epwa, Epwc, Epwv=np.zeros(15)
+yL_cardiopul, yav, ymv, ypv, ytv, ypua, ypuc, ypuv, ypwa, ypwc, ypwv=np.zeros(11)
+R_cardiopul, Ra, Raa, Rav, Rca, Rda, Rmv, Rpua, Rpuc, Rpuv, Rpv, Rpwa, Rpwc, Rpwv, Rtv, Rv, Rvc, bav, bmv, bpv, btv=np.zeros(21)
+S_cardiopul, Spua, Spuc, Spuv, Spwa, Spwc, Spwv=np.zeros(7)
+Z_cardiopul, Zpua, Zpuc, Zpuv, Zpwa, Zpwc, Zpwv=np.zeros(7)
+C_peripheral, Caor, Cart, Ccap, Cven, Cvca=np.zeros(6)
+yL_peripheral, yaor, yart, ycap, yven, yvca=np.zeros(6)
+R_peripheral, Raor, Rart, Rcap, Rv, Rvc=np.zeros(6)
+S_peripheral, Saor, Sart, Scap, Sven, Svca=np.zeros(6)
+sdvsdqdvdq, dvq, P_0d=np.zeros(3)
+dvdq_cardiopul, dv, v, dq, q=np.zeros(5)
+cardiac_parameter, elv, ela, erv, era, cklr, ckrl, plv, prv, Sla, Slv, Sra, Srv, ppp, ppc, pit, qco, FL, FR1, STR=np.zeros(20)
+R_cardiopulc, Rav0, Rmv0, Rpv0, Rtv0, bav0, bmv0, bpv0, btv0, Rav1, Rmv1, Rpv1, Rtv1, bav1, bmv1, bpv1, btv1=np.zeros(17)
+Rav2, Rmv2, Rpv2, Rtv2, bav2, bmv2, bpv2, btv2, yav0, ymv0, ypv0, ytv0, yav1, ymv1, ypv1, ytv1, yav2, ymv2, ypv2, ytv2=np.zeros(20)
+n_val, m_cvst, m_cvrg, n_vrg=np.zeros(4)
+timestep, Tduration, ddt, tee, tcr, tac, tar, t, odic=np.zeros(9)
+
+ 
 def lumped(HR, ncyc, dt, *param):
 
     def Integrated_ode():
@@ -20,7 +39,7 @@ def lumped(HR, ncyc, dt, *param):
         global plv, prv, Sla, Slv, Sra, Srv, ppc, pit, qco, Tduration, ddt, tcr
 
         dvq[0, 0] = q[0, 14] - q[0, 0]  # Venous volume  dvq(1)= q(15) - q(1);
-
+        
         P_0d[0, 0] = v[0, 0] / Cven + Sven * dv[0, 0]  # Venous  Pressure
 
         dvq[0, 1] = (v[0, 0] / Cven + Sven * dv[0, 0] - Rv * q[0, 0] - v[0, 1] / Cvca - Svca * dv[
@@ -137,7 +156,7 @@ def lumped(HR, ncyc, dt, *param):
 
         dvq[0, 28] = (v[0, 13] / Ccap + Scap * dv[0, 13] - q[0, 14] * Rcap - v[0, 0] / Cven - Sven * dv[
             0, 0]) / ycap  # Capillary Pressure
-
+        
     def Ecal(EEE, ZZZ, vol):
         EcalR = EEE * np.exp(vol / ZZZ)
         return EcalR
@@ -329,6 +348,7 @@ def lumped(HR, ncyc, dt, *param):
     dv = np.zeros(shape=(2, 21))
     MyResult = np.zeros(shape=(100000, 28))
     MyResult1 = np.zeros(shape=(100000, 29))
+    
 
     # initial values of all state equations (should be equal to number of equations in dvdqsdvdq.m file)
     odic = np.array(
@@ -339,7 +359,6 @@ def lumped(HR, ncyc, dt, *param):
     Pit = -2.5
     pit = Pit
     jj = 0
-      
     # --------------------------------------------------------------------------------
     br = param[0]
     cmp = param[1]
@@ -455,7 +474,6 @@ def lumped(HR, ncyc, dt, *param):
     ntotal = (ncycle * Tduration / dt)
     ntotal = int(ntotal)
     
-
     # ------------------------------------------------------------------------
     for nstep in np.arange(ntotal):
         if nstep == 0:
@@ -582,8 +600,33 @@ def lumped(HR, ncyc, dt, *param):
         if nstep + 1 == ntotal:
             odic_new = result[0, :29]
 
-    t = np.arange(0, 4.8, dt)
+    t = np.arange(0, ntotal, dt)
     T = t
- 
-
     return MyResult1, T
+
+
+if __name__ =="__main__":
+    import time
+    import matplotlib.pyplot as plt
+    st = time.time()
+    heart_br_para = [0.000016,0.000025, 0.000025, 0.000016]
+    heart_cmp_para = [0.06, 0.3, 0.9, 30.0, 100.0]
+    heart_ela_para = [0.0200,0.0200, 0.0200, 0.06, 0.055, 0.06, 0.52, 0.043, 0.07, 0.075, 2.87]
+    heart_ind_para = [0.0005,0.0005,0.0002, 0.0005,0.005, 0.0005,
+                            0.0005, 0.0002, 0.0005, 0.015, 0.0005]
+    heart_res_para = [0.001, 0.07, 0.005, 0.005, 0.04, 0.04,
+                                0.005, 0.005, 0.005, 0.08, 0.35]
+    heart_ve_para = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
+                                0.01, 0.01, 0.01, 0.01, 0.01]
+    
+    cda_dat = [ heart_br_para, heart_cmp_para, heart_ela_para, heart_ind_para, heart_res_para, heart_ve_para ]
+    try:
+        x, t = lumped(70, 5, 0.00015,*cda_dat)
+    except Exception as e:
+        print(str(e))
+    end = time.time()
+    print('Total time: %s',(end-st))
+    #total = len(t)
+    plt.plot(t, x[:total, 20])
+    plt.show()
+    

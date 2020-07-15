@@ -1,16 +1,15 @@
-'''
-THIS IS THE MODEL OF THE 128 SEGMENT ARTERY TREE ADOPTED FROM AVOLIO 1980
+#THIS IS THE MODEL OF THE 128 SEGMENT ARTERY TREE ADOPTED FROM AVOLIO 1980
 
-The side functions are dfined first and the main function where the simulation
-is done is described last
 
-The different functions in order are
-    1. RUNGEKUTTA 4th order method
-    2. GENERATION OF INTITIAL PULSE
-    3. SYSTEM OF ODES (128 SEGMENT MODEL)
-    4. MAIN FUNCTION TO SOLVE THE SYSTEM OF ODEs
+#The side functions are dfined first and the main function where the simulation
+#is done is described last
 
-'''
+#The different functions in order are
+#    1. RUNGEKUTTA 4th order method
+#    2. GENERATION OF INTITIAL PULSE
+#    3. SYSTEM OF ODES (128 SEGMENT MODEL)
+#    4. MAIN FUNCTION TO SOLVE THE SYSTEM OF ODEs
+
 
 # Importing the necessary library files
 import os
@@ -18,7 +17,9 @@ import numpy as np
 from scipy.integrate import solve_ivp
 
 # RUNGEKUTTA 4th order method
+
 def rungekutta4(f, x0, t0, tf, dt):
+    x0 = x0
     t = np.arange(t0, tf, dt)
     nt = t.size
     nx = x0.size
@@ -336,48 +337,70 @@ def integrated_ode(t, x, Vin, clock):
     return xdot
 
 # MAIN FUNCTION TO SOLVE THE SYSTEM OF ODEs
-def calc(HR, PF):
+def calc(HR, PF):    
+    path = os.path.join('Datas', 'RLCtru.txt')
+    rlctru = np.genfromtxt(path, delimiter=',')
+    Rs = rlctru[:, 0]
+    L = rlctru[:, 1]
+    C = rlctru[:, 2]
+    Rp = rlctru[:, 3]
+    f = open(path, 'w')
+    f.truncate()
+    f.close()
+    HR = int(HR)
+    PF = int(PF)
+    dt = 0.001
+    st = 0              #Start time
+    et = 10             #End time
+    clock = np.arange(st, et, dt)
+    T = 60 / HR
+    t1 = clock / T
+    t2 = t1 - np.floor(t1)
+    t3 = np.multiply(T, t2)
+    x1 = PF * (np.square(np.sin(3.14 * t3 / 0.3)))
+    x2 = np.floor(t3 + 0.7)
+    R1 = 0.11
+    L = 0.011
+    R2 = 1.11
+    C = 0.91
+    it = np.multiply((1 - x2), x1)
+    # GENERATION OF PULSE
+    # initial value
+    pulse_initial = np.zeros(2)
+    pulse_generator = lambda t, x: pulsegen(t, x, R1, L, R2, C, clock, it)  # input for solver function
+    t, x = rk(pulse_generator, pulse_initial, st, et, dt)
+    pu = it.transpose()  # plotting the output
+    pulse = (pu - x[0, :]) * R1 + x[1, :]
+    system_initial = np.zeros(256)
+    system_finder = lambda t, x: integrated_ode(t, x, pulse, clock)
+    t, x = rk(system_finder, system_initial, st,et,dt)
+    t = t[:7500]
+    x = x[:, 2500:]
+    #sol = solve_ivp(system_finder, [st, et], system_initial, method='Radau', t_eval=np.arange(st, et, dt))
+    #to = sol.t
+    #xo = sol.y
+    #t = to[:7500]
+    #x = xo[:, 2500:]
+    return t, x
+    
+
+if __name__ == "__main__":
+    import time
+    import Stenosis
+    import matplotlib.pyplot as plt
     try:
-        path = os.path.join('Datas', 'RLCtru.txt')
-        rlctru = np.genfromtxt(path, delimiter=',')
-        Rs = rlctru[:, 0]
-        L = rlctru[:, 1]
-        C = rlctru[:, 2]
-        Rp = rlctru[:, 3]
-        f = open(path, 'w')
-        f.truncate()
-        f.close()
-        HR = int(HR)
-        PF = int(PF)
-        dt = 0.001
-        st = 0
-        et = 10
-        clock = np.arange(st, et, dt)
-        T = 60 / HR
-        t1 = clock / T
-        t2 = t1 - np.floor(t1)
-        t3 = np.multiply(T, t2)
-        x1 = PF * (np.square(np.sin(3.14 * t3 / 0.3)))
-        x2 = np.floor(t3 + 0.7)
-        R1 = 0.11
-        L = 0.011
-        R2 = 1.11
-        C = 0.91
-        it = np.multiply((1 - x2), x1)
-        # GENERATION OF PULSE
-        # initial value
-        pulse_initial = np.zeros(2)
-        pulse_generator = lambda t, x: pulsegen(t, x, R1, L, R2, C, clock, it)  # input for solver function
-        t, x = rungekutta4(pulse_generator, pulse_initial, st, et, dt)
-        pu = it.transpose()  # plotting the output
-        pulse = (pu - x[0, :]) * R1 + x[1, :]
-        system_initial = np.zeros(256)
-        system_finder = lambda t, x: integrated_ode(t, x, pulse, clock)
-        sol = solve_ivp(system_finder, [st, et], system_initial, method='Radau', t_eval=np.arange(st, et, dt))
-        to = sol.t
-        xo = sol.y
-        t = to[:7500]
-        x = xo[:, 2500:]
-        return t, x
-    except:
-        return -1, -10000
+        start = time.time()
+        stn_dat = {'0': None, '1': 3, '7': 4, '13':6, '3': 7, '11': 20, '10': 0, '51': 0, '46': 0,
+                '74': 0, '56': None, '70': 0, '62': 0, '63': 0, '108': 0, '109': 0, '102': 0, '107': 0, '96': 0, '92': 55}
+        Stenosis.steno(0.04, 1.05, 0.6, **stn_dat)
+        t, x = calc(70,390)
+        #print("\n",x)
+        end = time.time()
+        print("Compilation time is: ", (end-start))
+        plt.plot(t, x[0, :])
+        plt.show()
+    except Exception as e:
+        print(str(e))
+
+    
+
