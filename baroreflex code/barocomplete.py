@@ -1,6 +1,5 @@
 import numpy as np
 
-
 Aav, Amv, Apv, Atv, Gpw = np.zeros(5)
 Elaa, Elab, Elva, Elvb, Eraa, Erab, Erva, Ervb, Epua, Epuc, Epuv, Epwa, Epwc, Epwv = np.zeros(14)
 yav, ymv, ypv, ytv, ypua, ypuc, ypuv, ypwa, ypwc, ypwv = np.zeros(10)
@@ -162,16 +161,15 @@ def barocomplete():
         P_0d[0, 26] = v[0, 13] / Ccap + Scap * dv[0, 13]  # Capillary Pressure
 
         dvq[0, 28] = (v[0, 13] / Ccap + Scap * dv[0, 13] - q[0, 14] * Rcap - v[0, 0] / Cven - Sven * dv[
-            0, 0]) / ycap  # Capillary Pressure
+            0, 0]) / ycap  # Capillary Flow
 
         dvq[0, 29] = (aao+(6.37*aod)-q[0, 15])/2.076
         dvq[0, 30] = (-q[0, 16]+gainR)/6
         dvq[0, 31] = (-q[0, 17]+gainElv)/8
         dvq[0, 32] = (-q[0, 18]+gainErv)/8
-        dvq[0, 33] = (-q[0, 29]+gainTs)/2
+        dvq[0, 33] = (-q[0, 19]+gainTs)/2
         dvq[0, 34] = (-q[0, 20]+gainTv)/1.5
        
-
     def Ecal(EEE, ZZZ, vol):
         EcalR = EEE * np.exp(vol / ZZZ)
         return EcalR
@@ -197,11 +195,13 @@ def barocomplete():
         tap = tar + teer - Tduration
         if (tcal >= 0.0 and tcal <= tap):
             ela = Elaa * 0.5 * (1.0 + np.cos(3.1415926 * (tcal + Tduration - tar) / teer)) + Elab
+        
         if (tcal > tap and tcal <= tac):
             ela = Elab
+            
         if (tcal > tac and tcal <= tar):
             ela = Elaa * 0.5 * (1.0 - np.cos(3.1415926 * (tcal - tac) / teec)) + Elab
-        # c if (tcal > tar. and.tcal <= (tar+teer)) then
+        
         if (tcal > tar and tcal <= Tduration):
             ela = Elaa * 0.5 * (1.0 + np.cos(3.1415926 * (tcal - tar) / teer)) + Elab
 
@@ -277,23 +277,22 @@ def barocomplete():
         global dv, v, dq, q 
         global timestep, Tduration, ddt
         
-        
-        
         # Declaration of variables
         dfl = np.zeros(shape=(2, 35))
         dq = np.zeros(shape=(2, 30))
         subrukuk = np.zeros(shape=(4, 35))
         inter = np.zeros(shape=(2, 35))
         newpara = np.zeros(shape=(2, 35))
+        
         # ---------------------------------------------------------
         # call Integrated_ode 
         Integrated_ode()
+        
         #---------------------------------------------------------
-        dfl[0, :35]=dvq[0, :35]
+        dfl[0, 0:35]=dvq[0, 0:35]
         
         dv[0, 0:7] = dfl[0, 0:13:2]
         dv[0, 7:14] = dfl[0, 15:28:2]
-
 
         #dq[0, 0:7]   = dfl[0, 1:14:2]
         #dq[0, 7:15]  = dfl[0, 14:29:2]
@@ -310,8 +309,8 @@ def barocomplete():
                 inter[0, 0:35] = np.multiply(0.5, (subrukuk[nrk, 0:35]))
             else:
                 inter[0, 0:35]=subrukuk[nrk, 0:35]
-        inter[0, 0:35]=np.multiply(0.5, (subrukuk[nrk, 0:35]))
-        newpara[0, 0:35]=np.add(subresultcr[0, 0:35],inter[0, 0:35])
+        inter[0, 0:35]= np.multiply(0.5, (subrukuk[nrk, 0:35]))
+        newpara[0, 0:35]= np.add(subresultcr[0, 0:35], inter[0, 0:35])
         
         q[0, 0:7]=newpara[0, 1:14:2]
         q[0, 7:15]=newpara[0, 14:29:2]
@@ -356,12 +355,10 @@ def barocomplete():
     MyResult = np.zeros(shape=(100000, 39))
     MyResult1 = np.zeros(shape=(100000, 39))
     MyResult2 = np.zeros(shape=(100000, 39))
-    
     Ervbaro, Rartbaro, Elvbaro, Tbaro=np.zeros(4)
-    
+
     odic_new = np.zeros(35)
     
-
     odic=np.array([1068.2371, 52.4983,	181.7233,	-41.7618,	65.0625,	0,	122.6637,	
                    0,	67.0272,	-0.3118,	135.11,	-2.1737,	198.7568,	-64.1791,	
                    0,	2.7983,	0.1357,	2.7932,	1.1042,	68.8587,	0,	121.2539,	0,	
@@ -462,7 +459,7 @@ def barocomplete():
     Svca=0.01
     qco=0.0
 
-    ddt=0.01
+    ddt=0.001
     
     for cycle in range(65):
         if cycle==0:
@@ -476,23 +473,23 @@ def barocomplete():
             Elva=Elvbaro
             Erva=Ervbaro
 
-        for nstep in np.arange(0 , ddt, 10):
+        for nstep in np.arange(0 , Tduration, ddt):
             if nstep==0:
                 ppc=0.0
                 result=np.zeros(shape=(2, 101))
                 result[0, 0:35] = odic
 
                 for i in range(14):
-                    if i<=7:
-                        v[0, i] = result[0,2*i-1]
-                    else:
+                    if i<=6:
                         v[0, i] = result[0,2*i]
+                    else:
+                        v[0, i] = result[0,2*i+1]
     
                 for i in range(15):
-                    if i<=7:
-                        q[0, i] = result[0,2*i]
+                    if i<=6:
+                        q[0, i] = result[0,2*i+1]
                     else:
-                        q[0, i] = result[0,2*i-1]
+                        q[0, i] = result[0,2*i]
                 q[0, 15:21] = result[0, 29:35]
                 STR = 1.0
                 FL = 1.0
@@ -514,13 +511,15 @@ def barocomplete():
             
             ncount=0
             ncountadd=ncount+1
-            resultcr[0, 0:101]= result[0, 0:101]
+            resultcr[0, 0:101]=result[0, 0:101]
+            
             #%c.... Compute the elastances
-            Epua = Ecal(Epua0,Zpua, v[0, 4])
-            Epuc = Ecal(Epuc0,Zpuc, v[0, 5])
-            Epuv = Ecal(Epuv0,Zpuv, v[0, 6])
-            Epwc = Ecal(Epwc0,Zpwc, v[0, 7])
-            Epwv = Ecal(Epwv0,Zpwv, v[0, 8])
+            Epua = Ecal(Epua0, Zpua, v[0, 4])
+            Epuc = Ecal(Epuc0, Zpuc, v[0, 5])
+            Epuv = Ecal(Epuv0, Zpuv, v[0, 6])
+            Epwc = Ecal(Epwc0, Zpwc, v[0, 7])
+            Epwv = Ecal(Epwv0, Zpwv, v[0, 8])
+            
             #%c.....Update nolinear cardiac parameters
             if tcr==0.0:
                 FL=1.0-(result[0,21] / Vmax)
@@ -531,7 +530,7 @@ def barocomplete():
             Rvecal()
             Raecal()
    
-            cklr = erv / (Es+erv)
+            cklr = erv/(Es+erv)
             ckrl = elv/(Es+elv)
             plv = (ckrl*Es * v[0, 10] + ckrl * cklr * Es * v[0, 3]) / (1.0-cklr)
             prv = (cklr * Es * v[0, 3] + ckrl * cklr * Es* v[0, 10]) / (1.0-ckrl)
@@ -556,14 +555,14 @@ def barocomplete():
             es2=np.exp(es1)
             es3=(fes0-fes1)
             fes1=fes1+(es3*es2)
-            fes=np.around(fes1,-3)
+            fes=np.around(fes1, 3)
     
             fev0=3.2
             fev1=6.3
             kev=7.06
             fcs0=25
-            fev1=(fev0+fev1*np.exp((q[0, 15]-fcs0)/kev))/(1+np.exp((q[0, 15]-fcs0)/kev));
-            fev=np.around(fev1,-3)
+            fev1=(fev0+fev1*np.exp((q[0, 15]-fcs0)/kev))/(1+np.exp((q[0, 15]-fcs0)/kev))
+            fev=np.around(fev1, 3)
            
             #================Arterial Resistance=====================
             if jj>2000:
@@ -585,7 +584,7 @@ def barocomplete():
                 if fes>fesmin:
                     gainElv1 = fes-fesmin1+1
                     gainElv2 = np.log(gainElv1)
-                    gainElv = Gerv*gainElv2
+                    gainElv = Gelv*gainElv2
                 else:
                     gainElv=0
             else:
@@ -606,7 +605,7 @@ def barocomplete():
 
             #====================Cardiac Cycle sympathetic%%%%%%%%%%%%%%%%%%%%
             fesmin1=2.66
-            GTs=-0.13
+            GTs= -0.13
             if jj>2000:
                 if fes>fesmin:
                     gainTs1 = fes-fesmin1 + 1
@@ -630,7 +629,7 @@ def barocomplete():
             Tbaro1=q[0, 19]+q[0, 20]+0.58
             Tbaro=np.around(Tbaro1, 3)
             
-            Elvbaro1=q[0, 18]+2.0829
+            Elvbaro1=q[0, 17]+2.0829
             Elvbaro=np.around(Elvbaro1, 3)
             
             Rartbaro1=0.534+q[0, 16]
@@ -657,7 +656,6 @@ def barocomplete():
                 q[0, 11]=0.0
     
             if(np.abs(tcr-Tduration) <= ddt*0.5 or tcr<0.1 or (Amv==0.0 or resultcr[0, 20]<=delta)):
-    
                 resultcr[0, 20]=0.0
                 result[ncountadd, 20]=0.0
                 q[0, 10]=0.0
@@ -675,15 +673,17 @@ def barocomplete():
             v[0, 0:7] = result[ncountadd,0:13:2]
             v[0, 7:14] = result[ncountadd,15:28:2]
             
-            q[0, 0:7] = result[ncountadd,0:14:2]
+            q[0, 0:7] = result[ncountadd,1:14:2]
             q[0, 7:15] = result[ncountadd,14:29:2]
             q[0, 15:21] = result[ncountadd,29:35:1]
-            result[0, 0:35] = result[0, 0:35]
+            result[0, 0:35] = result[1, 0:35]
             jj=jj+1
     
             MyResult[jj-1, 0:27] = P_0d[0, 0:27]
+            
             MyResult1[jj-1, 0] = fcs
             MyResult1[jj-1, 1:36] = result[0, 0:35]###################
+            
             MyResult2[jj-1, 0] = fcs
             MyResult2[jj-1, 1] = fes
             MyResult2[jj-1, 2] = fev
@@ -699,16 +699,19 @@ def barocomplete():
     
 
             if jj>1:
-                a = jj-1
-                aod=(MyResult[jj-1, 22]-MyResult[a,22])*10000
-            MyResult2[jj-1,3] = aod
+                a = jj-2
+                aod=(MyResult[jj-1, 22]-MyResult[a,22])*1000
+            MyResult2[jj-1, 3] = aod
             
             if(nstep == Tduration):
                 odic_new = result[0, 0:35]
                 
         odic = np.around(odic_new, 3)
         
-        np.savetxt('MyResult.txt', MyResult, delimiter=",")    
+        np.savetxt('MyResult.txt', MyResult, delimiter=",")
+        np.savetxt('MyResult1.txt', MyResult1, delimiter=",")
+        np.savetxt('MyResult2.txt', MyResult2, delimiter=",")
+          
         
         
 if __name__ == "__main__":
