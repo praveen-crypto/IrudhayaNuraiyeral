@@ -10,7 +10,6 @@
 #    3. SYSTEM OF ODES (128 SEGMENT MODEL)
 #    4. MAIN FUNCTION TO SOLVE THE SYSTEM OF ODEs
 
-
 # Importing the necessary library files
 import os
 import numpy as np

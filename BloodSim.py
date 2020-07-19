@@ -1,9 +1,6 @@
 import os
 import sys
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
-
 from HomeWindow import Ui_HomeWindow
 from Mainwindow import Heart_para, Steno_para, Ui_MainWindow
 
