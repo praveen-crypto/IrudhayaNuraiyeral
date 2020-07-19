@@ -320,7 +320,7 @@ def barocomplete():
         v[0, 7:14]=newpara[0, 15:28:2]
         return subrukuk
 
-    
+
     global  Aav, Amv, Apv, Atv, Gpw # valve,
     global  Elaa, Elab, Elva, Elvb, Eraa, Erab, Erva, Ervb, Epua, Epuc, Epuv, Epwa, Epwc, Epwv#E_cardiopul,
     global  yav, ymv, ypv, ytv, ypua, ypuc, ypuv, ypwa, ypwc, ypwv

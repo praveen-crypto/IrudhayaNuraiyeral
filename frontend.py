@@ -1,9 +1,15 @@
-'''
-THIS IS THE FRONT END (GUI) 
-'''
+from julia import Main
+import matplotlib.pyplot as plt
+import time
 
-# Importing the necessary library files
-import os
-import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
+st = time.time()
+Main.include("cardiac.jl")
+res = Main.cardiac()
+et = time.time()
+
+print("total time:", (et-st))
+plt.plot(res)
+plt.show()
+
+
 

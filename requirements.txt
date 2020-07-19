@@ -1,0 +1,12 @@
+numpy ==1.18.5
+scipy==1.4.1
+PyInstaller==3.6
+PyQt5 ==5.15.0
+PyQt5-sip==12.8.0
+PyQt5-stubs==5.13.1.4
+pyqt5ac ==1.2.1
+pyqtgraph ==0.11.0
+pywin32==227
+pywin32-ctypes==0.2.0
+pywinpty==0.5.7
+QtPy==1.9.0
