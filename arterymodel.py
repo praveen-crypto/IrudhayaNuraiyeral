@@ -336,7 +336,7 @@ def integrated_ode(t, x, Vin, clock):
     return xdot
 
 # MAIN FUNCTION TO SOLVE THE SYSTEM OF ODEs
-def calc(HR, PF):    
+def calc(HR, PF):
     path = os.path.join('Datas', 'RLCtru.txt')
     rlctru = np.genfromtxt(path, delimiter=',')
     Rs = rlctru[:, 0]
@@ -366,15 +366,13 @@ def calc(HR, PF):
     # GENERATION OF PULSE
     # initial value
     pulse_initial = np.zeros(2)
-    pulse_generator = lambda t, x: pulsegen(t, x, R1, L, R2, C, clock, it)  # input for solver function
+    pulse_generator = lambda t, x: pulsegen(t, x, R1, L, R2, C, clock, it)
     t, x = rungekutta4(pulse_generator, pulse_initial, st, et, dt)
-    pu = it.transpose()  # plotting the output
+    pu = it.transpose()
     pulse = (pu - x[0, :]) * R1 + x[1, :]
     system_initial = np.zeros(256)
     system_finder = lambda t, x: integrated_ode(t, x, pulse, clock)
-    #t, x = rk(system_finder, system_initial, st,et,dt)
-    #t = t[:7500]
-    #x = x[:, 2500:]
+
     sol = solve_ivp(system_finder, [st, et], system_initial, method='Radau', t_eval=np.arange(st, et, dt))
     to = sol.t
     xo = sol.y
@@ -387,6 +385,8 @@ if __name__ == "__main__":
     import time
     import Stenosis
     import matplotlib.pyplot as plt
+    from julia import Main
+    Main.include("baroreflex_model.jl")
     try:
         start = time.time()
         stn_dat = {'0': None, '1': 3, '7': 4, '13':6, '3': 7, '11': 20, '10': 0, '51': 0, '46': 0,

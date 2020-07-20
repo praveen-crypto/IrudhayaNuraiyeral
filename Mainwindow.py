@@ -5,13 +5,13 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import Artery_model
-import Cardiac
+import baroreflex_model
+import arterymodel
+import heartmodel
 import resources
 import Stenosis
 from SQLFILE import (create_connection, execute_many_query, execute_query,
                      execute_read_query)
-
 
 stn_dat = {'0': None, '1': None, '7': None, '13': None, '3': None, '11': None, '10': None, '51': None,
             '46': None, '74': None, '56': None, '70': None, '62': None, '63': None, '108': None,
@@ -59,7 +59,7 @@ class Ui_MainWindow(object):
             self.comboBox_G3 = QtWidgets.QComboBox(self.centralwidget)
             self.menubar = QtWidgets.QMenuBar(MainWindow)
             self.statusbar = QtWidgets.QStatusBar(MainWindow)
-            self.dockWidget_1 = QtWidgets.QDockWidget(MainWindow)
+            self.input_para_dock = QtWidgets.QDockWidget(MainWindow)
             self.dockWidgetContents_1 = QtWidgets.QWidget()
             self.gridLayout = QtWidgets.QGridLayout(self.dockWidgetContents_1)
             self.groupBox_2 = QtWidgets.QGroupBox(self.dockWidgetContents_1)
@@ -124,6 +124,7 @@ class Ui_MainWindow(object):
                 " moving more slowly and under low pressure, enters small vessels called venules"
                 " that converge to form veins, ultimately guiding the blood on its way back to the"
                 " heart.")
+            
             self.setupUi()
 
         def setupUi(self):
@@ -141,6 +142,7 @@ class Ui_MainWindow(object):
             MainWindow.setDockOptions(
                 QtWidgets.QMainWindow.AllowNestedDocks | QtWidgets.QMainWindow.AllowTabbedDocks |
                 QtWidgets.QMainWindow.AnimatedDocks | QtWidgets.QMainWindow.ForceTabbedDocks | QtWidgets.QMainWindow.VerticalTabs)
+            
             self.centralwidget.setObjectName("centralwidget")
             self.gridLayout_1.setObjectName("gridLayout_1")
             # ______________________________GRAPH_WIDGET - 1 _____________________________
@@ -247,7 +249,7 @@ class Ui_MainWindow(object):
             self.buttonGroup_2.addButton(self.radioButton_4)
             self.gridLayout_1.addWidget(self.radioButton_4, 2, 2, 1, 1)
             self.radioButton_4.clicked.connect(partial(self.flow_plot, self.radioButton_4))
-            # _________________________________________________THIRD GRAPH _____________________________________________________________
+            # _________________________________________________HEART MDL PLOT _____________________________________________________________
             # ============ComboBox_G3
             sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
             sizePolicy.setHorizontalStretch(1)
@@ -293,13 +295,13 @@ class Ui_MainWindow(object):
             self.radioButton_6.clicked.connect(self.radio_plot)
 
             # ___________________________________LEFT SIDE DOCK WIDGET___________________________________
-            # _______________________________________DockWidget_1________________________________________
-            self.dockWidget_1.setMinimumSize(QtCore.QSize(366, 534))
-            self.dockWidget_1.setMouseTracking(True)
-            self.dockWidget_1.setFloating(False)
-            self.dockWidget_1.setFeatures(
-                QtWidgets.QDockWidget.DockWidgetFloatable | QtWidgets.QDockWidget.DockWidgetMovable)
-            self.dockWidget_1.setObjectName("dockWidget_1")
+            # ____________________________________Input Parameter Dock________________________________________
+            #self.input_para_dock.setMinimumSize(QtCore.QSize(300, 534))
+            self.input_para_dock.setMouseTracking(True)
+            self.input_para_dock.setFloating(False)
+            self.input_para_dock.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable | QtWidgets.QDockWidget.DockWidgetMovable
+                                        | QtWidgets.QDockWidget.DockWidgetClosable )
+            self.input_para_dock.setObjectName("dockWidget_1")
             self.dockWidgetContents_1.setObjectName("dockWidgetContents_1")
             self.gridLayout.setObjectName("gridLayout")
            
@@ -421,8 +423,6 @@ class Ui_MainWindow(object):
             self.checkBox_2.setObjectName("checkBox_2")
             self.gridLayout_3.addWidget(self.checkBox_2, 2, 1, 1, 1)
             self.gridLayout.addWidget(self.groupBox_1, 0, 0, 1, 1)
-            self.dockWidget_1.setWidget(self.dockWidgetContents_1)
-            MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockWidget_1)
             self.checkBox_2.clicked.connect(self.enable)
 
             #=================================LEFT SIDE SECOND GROUPBOX=============================
@@ -544,6 +544,8 @@ class Ui_MainWindow(object):
             self.label_12.setObjectName("label_12")
             self.gridLayout_2.addWidget(self.label_12, 3, 0, 1, 2)
             self.gridLayout.addWidget(self.groupBox_2, 1, 0, 1, 1)
+            self.input_para_dock.setWidget(self.dockWidgetContents_1)
+            MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.input_para_dock)
             
             #________________________________RIGHT SIDE INFORMATION DOCKWIDGET______________________________________________
             # ===============dockWidget_2
@@ -594,11 +596,13 @@ class Ui_MainWindow(object):
             self.gridLayout_5.addWidget(self.pushButton_7, 0, 2, 1, 1)
             self.gridLayout_4.addWidget(self.groupBox_4, 1, 0, 1, 1)
             self.dockWidget_2.setWidget(self.dockWidgetContents_2)
-            MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockWidget_2)
-
+            MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockWidget_2)
+            
+            QtWidgets.QMainWindow.tabifyDockWidget(self.MainWindow, self.dockWidget_2, self.input_para_dock)
             # _______________________________RIGHT SIDE HEART DOCKWIDGET_____________________
             # ============dockWidget_3
             self.dockWidget_3.setMinimumSize(QtCore.QSize(250, 487))
+            
             self.dockWidget_3.setMaximumWidth(450)
             self.dockWidget_3.setObjectName("dockWidget_2")
             self.dockWidgetContents_3.setObjectName("dockWidgetContents_3")
@@ -669,34 +673,49 @@ class Ui_MainWindow(object):
             self.menuHelp = QtWidgets.QMenu(self.menubar)
             self.menuHelp.setObjectName("menuHelp_2")
             MainWindow.setMenuBar(self.menubar)
+            
+
             # ============Statusbar
             self.statusbar.setStyleSheet("background-color: rgb(35, 35, 35);\n"     "color: rgb(255, 210, 119);")
             self.statusbar.setObjectName("statusbar")
             MainWindow.setStatusBar(self.statusbar)
 
             # _____________________________Action_Declaration________________________________
-            self.actionRun = QtWidgets.QAction(MainWindow)
-            self.actionRun.setObjectName("actionRUN")
+            self.artry_model = QtWidgets.QAction(MainWindow)
+            self.artry_model.setObjectName("actionRUN")
+
             self.actionStop = QtWidgets.QAction(MainWindow)
             self.actionStop.setObjectName("actionSTOP")
+
             self.actionClear = QtWidgets.QAction(MainWindow)
             self.actionClear.setObjectName("actionQuit")
+
             self.actionQuit = QtWidgets.QAction(MainWindow)
             self.actionQuit.setObjectName("actionQuit_2")
+
             self.actionIp = QtWidgets.QAction(MainWindow)
             self.actionIp.setObjectName("actionView")
+
             self.actionReset = QtWidgets.QAction(MainWindow)
             self.actionReset.setObjectName("actionReset")
+
             self.actionWaveform = QtWidgets.QAction(MainWindow)
             self.actionWaveform.setObjectName("actionWaveform")
+
             self.actionQuit = QtWidgets.QAction(MainWindow)
             self.actionQuit.setObjectName("actionQuit")
+
             self.actionBloodsim = QtWidgets.QAction(MainWindow)
             self.actionBloodsim.setObjectName("actionBloodsim")
+
             self.actionAbout_Bloodsim = QtWidgets.QAction(MainWindow)
             self.actionAbout_Bloodsim.setObjectName("actionAbout_Bloodsim")
+
             self.actionHeart_Parameter = QtWidgets.QAction(MainWindow)
             self.actionHeart_Parameter.setObjectName("actionHeart_Parameter")
+
+            self.actionBaro_model = QtWidgets.QAction(MainWindow)
+            self.actionBaro_model.setObjectName("Baro_model")
 
             # ________________________________Action_Adding_________________________________
             self.menuFile.addAction(self.actionClear)
@@ -710,9 +729,11 @@ class Ui_MainWindow(object):
             self.actionIp.setChecked(True)
             self.actionWaveform.setChecked(True)
             self.actionHeart_Parameter.setCheckable(True)
-            self.menuRun.addAction(self.actionRun)
+            self.menuRun.addAction(self.artry_model)
             self.menuRun.addSeparator()
             self.menuRun.addAction(self.actionStop)
+            self.menuRun.addSeparator()
+            self.menuRun.addAction(self.actionBaro_model)
             self.menuRun.addSeparator()
             self.menuRun.addAction(self.actionReset)
             self.menuHelp.addAction(self.actionBloodsim)
@@ -732,9 +753,10 @@ class Ui_MainWindow(object):
             self.actionWaveform.triggered.connect(self.showDock_2)
             self.actionHeart_Parameter.triggered.connect(self.showDock_3)
             # ============RunMenu_trigger
-            self.actionRun.triggered.connect(self.artery_model)
+            self.artry_model.triggered.connect(partial(self.artery_model, self.artry_model))
             self.actionReset.triggered.connect(self.reset)
             self.actionStop.triggered.connect(self.cardiac_model)
+            self.actionBaro_model.triggered.connect(partial(self.artery_model, self.actionBaro_model))
             # ============HelpMenu_trigger
             self.actionBloodsim.triggered.connect(self.help)
             self.actionAbout_Bloodsim.triggered.connect(self.about)
@@ -760,7 +782,7 @@ class Ui_MainWindow(object):
             self.menuView.setTitle(self._translate("MainWindow", "View"))
             self.menuRun.setTitle(self._translate("MainWindow", "Run"))
             self.menuHelp.setTitle(self._translate("MainWindow", "Help"))
-            self.dockWidget_1.setWindowTitle(self._translate("MainWindow", "Input Parameters"))
+            self.input_para_dock.setWindowTitle(self._translate("MainWindow", "Input Parameters"))
             self.label_1.setText(self._translate("MainWindow", "Property"))
             self.label_2.setText(self._translate("MainWindow", "Value"))
             self.label_3.setText(self._translate("MainWindow", "Heart Rate (bpm)"))
@@ -819,12 +841,13 @@ class Ui_MainWindow(object):
             self.dockWidget_2.setWindowTitle(self._translate("MainWindow", "ARTERY DOCK"))
             self.dockWidget_3.setWindowTitle(self._translate("MainWindow", "HEART DOCK"))
 
-            self.actionRun.setText(self._translate("MainWindow", "Artery Model"))
+            self.artry_model.setText(self._translate("MainWindow", "Artery Model"))
             self.actionStop.setText(self._translate("MainWindow", "Heart Model"))
             self.actionClear.setText(self._translate("MainWindow", "Clear"))
             self.actionIp.setText(self._translate("MainWindow", "Input Parmeters"))
             self.actionWaveform.setText(self._translate("MainWindow", "Artery Dock"))
             self.actionHeart_Parameter.setText(self._translate("MainWindow", "Heart Dock"))
+            self.actionBaro_model.setText(self._translate("MainWindow", "Baroreflex"))
             self.actionReset.setText(self._translate("MainWindow", "Reset"))
             self.actionQuit.setText(self._translate("MainWindow", "Quit"))
             self.actionQuit.setText(self._translate("MainWindow", "Quit"))
@@ -859,13 +882,13 @@ class Ui_MainWindow(object):
 
         def showDock_1(self):
             if not self.actionIp.isChecked():
-                self.dockWidget_1.hide()
+                self.input_para_dock.hide()
             if self.actionIp.isChecked():
-                self.dockWidget_1.show()
+                self.input_para_dock.show()
 
-        def showDock_2(self, MainWindow):
+        def showDock_2(self):
             if self.actionWaveform.isChecked():
-                self.radioButton_3.setText(self._translate("MainWindow", "Pressure"))
+                self.radioButton_3.setText("Pressure")
                 self.radioButton_3.show()
                 self.radioButton_4.show()
                 self.radioButton_5.hide()
@@ -907,37 +930,51 @@ class Ui_MainWindow(object):
                 self.dockWidget_2.show()
                 self.actionWaveform.setChecked(True)
 
-        def artery_model(self, MainWindow):
+        def artery_model(self, id_check):
             try:
                 datas = stn_dat
-                self.showDock_2(MainWindow)
-                self.comboBox_G1.setEnabled(True)
-                self.comboBox_G2.setEnabled(True)
-                self.radioButton_1.setEnabled(True)
-                self.radioButton_2.setEnabled(True)
-                self.radioButton_3.setEnabled(True)
-                self.radioButton_4.setEnabled(True)
-                H = self.doubleSpinBox_1.value()    # read HR value
-                P = self.doubleSpinBox_2.value()    # read Pressure value
                 m = self.doubleSpinBox_4.value()    # Blood Viscosity
                 r = self.doubleSpinBox_5.value()    # Blood Density
                 g = self.doubleSpinBox_6.value()    # Reflection Co-efficient
                 Stenosis.steno(m, r, g, **datas)    # Stenosis function calling 
-                self.clock, self.pulse = Artery_model.calc(H, P)
-                self.c = np.all(self.clock != -1)
-                self.p = np.all(self.pulse != -10000)
-                self.alert('ARTERY MODEL EXECUTED')
 
+                if id_check == self.artry_model:
+                    self.showDock_2()
+                    self.comboBox_G1.setEnabled(True)
+                    self.comboBox_G2.setEnabled(True)
+                    self.radioButton_1.setEnabled(True)
+                    self.radioButton_2.setEnabled(True)
+                    self.radioButton_3.setEnabled(True)
+                    self.radioButton_4.setEnabled(True)
+                    H = self.doubleSpinBox_1.value()    # read HR value
+                    P = self.doubleSpinBox_2.value()    # read Pressure value
+                    self.clock, self.pulse = arterymodel.calc(H, P)
+                    self.alert('ARTERY MODEL EXECUTED')
+
+                elif id_check == self.actionBaro_model:
+                    self.showDock_2()
+                    self.comboBox_G1.setEnabled(True)
+                    self.comboBox_G2.setEnabled(True)
+                    self.radioButton_1.setEnabled(True)
+                    self.radioButton_2.setEnabled(True)
+                    self.radioButton_3.setEnabled(True)
+                    self.radioButton_4.setEnabled(True)
+                    H = self.doubleSpinBox_1.value()    # read HR value
+                    self.clock, self.pulse = baroreflex_model.calc(H)
+                    if self.clock.all() == -1 or self.pulse.all() == -100000:
+                        self.alert('Failed')
+                    else:
+                        self.alert('BARO MODEL EXECUTED')
             except Exception as e:
                 self.alert(str(e))
 
         def cardiac_model(self):
             self.cv = 1
             H = self.doubleSpinBox_1.value()
-            self.cardiac, self.ctime = Cardiac.lumped(H, 5, 0.00015, *cda_dat)
-            self.actionHeart_Parameter.setChecked(True) 
+            self.cardiac, self.ctime = heartmodel.lumped(H, 5, 0.00015, *cda_dat)
+            self.actionHeart_Parameter.setChecked(True)
             self.showDock_3()
-            self.alert('Heat Model Executed')
+            self.alert('Heart Model Executed')
 
         def mainViewer(self, cmbx):
             try:
@@ -1321,7 +1358,7 @@ class Ui_MainWindow(object):
                                             ' beyond this bone divides into two branches, which enter into the formation'
                                             ' of the superficial and deep volar arches.')
             elif Id == 19:
-                self.labelEdit_1.setPixmap(QtGui.QPixmap(':/images/artery tree images', 'radial_right.jpg'))
+                self.labelEdit_1.setPixmap(QtGui.QPixmap(':/images/artery tree images', 'radial_left.jpg'))
                 self.textBrowser_2.setText('The radial artery arises from the bifurcation of the brachial artery in the'
                                             ' antecubital fossa. It runs distally on the anterior part of the forearm. '
                                             'There, it serves as a landmark for the division between the anterior and'
@@ -1446,8 +1483,8 @@ class Ui_MainWindow(object):
             line_edit.setText(
                 'BloodSim is an open-source software to simulate blood pressure, flow and volume waveforms in the cardiovascular system. Effect of stenosis on the pressure and flow of blood in the arterial tree is modelled.\n'
                 '\nThe model is based on the following authors works,\n'
-                '\nDr.Suganthi L     (Associate professor, Department of Biomedical Engineering, SSN college of Engineering)\n'
-                '\nDr,Manivannan M     (Professor, Department of Applied Mechanics, Indian Institute of Technology, Madras)\n'
+                '\nDr. Suganthi L     (Associate professor, Department of Biomedical Engineering, SSN college of Engineering)\n'
+                '\nDr. Manivannan M     (Professor, Department of Applied Mechanics, Indian Institute of Technology, Madras)\n'
                 '\nDr. Hemalatha K\n'
                 '\nThe model is based on the following works,\n'
                 '1.  HYBRID CARDIOPULMONARY INTERACTION MODEL TOWARDS NOVEL DIGNOSTIC TECHNIQUES\n'
@@ -5910,4 +5947,3 @@ if __name__ == "__main__":
     ui = Ui_MainWindow(form)
     form.show()
     sys.exit(app.exec_())
-

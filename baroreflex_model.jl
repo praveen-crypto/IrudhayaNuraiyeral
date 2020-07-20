@@ -507,8 +507,7 @@ function dvdqsdvsdq1()
 end
 
 
-function main_baro()
-
+function main_baro(HR)
         global  Aav, Amv, Apv, Atv, Gpw #Valve Parameters
         global  Elaa, Elab, Elva, Elvb, Eraa, Erab, Erva, Ervb, Epua, Epuc, Epuv, Epwa, Epwc, Epwv #E_cardiopul
         global  yav, ymv, ypv, ytv, ypua, ypuc, ypuv, ypwa, ypwc, ypwv #yL_cardiopul
@@ -542,13 +541,14 @@ function main_baro()
         resultcr = zeros(1, 101)
         rukuk = zeros(4, 110)
 
-        MyResult = zeros(100000, 39)
-        MyResult1 = zeros(100000, 39)
-        MyResult2 = zeros(100000, 39)
+        MyResult = zeros(100000, 28)
+        MyResult1 = zeros(100000, 37)
+        MyResult2 = zeros(100000, 15)
         Ervbaro, Rartbaro, Elvbaro, Tbaro = zeros(1,4)
 
         odic_new = zeros(1,35)
-
+        print(typeof(HR))
+        hr = copy(HR)
 
         Pit=-2.5
         pit=Pit
@@ -643,16 +643,17 @@ function main_baro()
         Sven=0.01
         Svca=0.01
         qco = 0.0
-
+        
         #---------------------------------------
         # Tduration=input('Please specify cardiac duration(s)')
         # dt= input('Please specify time step(s)')
         # tee=0.3*sqrt(Tduration) #!Moment when ventricular contractility reaches the peak
         # tac=Tduration - 0.5*tee -  0.02* (Tduration/0.855)# !Moment when atrium begins to contract
         # tar=Tduration - 0.02* (Tduration/0.855)# !Moment when atrium begins to relax
-        ddt =0.001
+        
         # ncycle=input('how many cardiac cycles to run ?')
         # ntotal =5
+        ddt = 0.001
 
         #---------------------------------------------
         for cycle in 1:1:65
@@ -859,7 +860,6 @@ function main_baro()
 
                         rukuk = rungekuttabaro(resultcr)
 
-
                         for i=1:35
                                 result[ncountadd, i] = result[ncount,i]+(rukuk[1,i]+2.0*(rukuk[2,i]+rukuk[3,i])+(rukuk[4,i]))/6.0
                         end
@@ -927,7 +927,8 @@ function main_baro()
                 end
         end
 
-        return MyResult
+        return MyResult1[16000:25999, 24]
 end
 
-main_baro()
+#@time result = main_baro()
+#println(size(result))
