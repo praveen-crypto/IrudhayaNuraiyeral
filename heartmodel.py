@@ -46,27 +46,34 @@ def lumped(HR, ncyc, dt, *param):
         global dv, v, q
         global ela, era
         global plv, prv, Sla, Slv, Sra, Srv, ppc, pit, qco, Tduration, ddt, tcr
+        
         dvq[0, 0] = q[0, 14] - q[0, 0]  # Venous volume  dvq(1)= q(15) - q(1);
         P_0d[0, 0] = v[0, 0] / Cven + Sven * dv[0, 0]  # Venous  Pressure
         dvq[0, 1] = (v[0, 0] / Cven + Sven * dv[0, 0] - Rv * q[0, 0] - v[0, 1] / Cvca - Svca * dv[
             0, 1]) / yven  # Venous flow
+
         dvq[0, 2] = q[0, 0] - q[0, 1]  # VC volume
         P_0d[0, 1] = v[0, 1] / Cvca + Svca * dv[0, 1]  # VC Pressure
         dvq[0, 3] = (v[0, 1] / Cvca - era * v[0, 2] - Rvc * q[0, 1] + Svca * dv[0, 1] - Sra * dv[
             0, 2] - ppc - pit) / yvca  # VC Flow
         qco = 0.0
+
         dvq[0, 4] = q[0, 1] + qco - q[0, 2]  # RA volume
         P_0d[0, 3] = era * v[0, 2] + Sra * dv[0, 2] + ppc + pit  # RA pressure
+       
         dvq[0, 5] = (era * v[0, 2] - prv - Rtv * q[0, 2] - btv * q[0, 2] * np.abs(q[0, 2]) + Sra * dv[0, 2] - Srv * dv[
             0, 3]) / ytv  # TV flow
         dvq[0, 6] = q[0, 2] - q[0, 3]  # RV volume
         P_0d[0, 5] = prv + Srv * dv[0, 3] + ppc + pit  # RV pressure
+        
         dvq[0, 7] = (prv - Epua * Zpua - Rpv * q[0, 3] - bpv * q[0, 3] * (np.abs(q[0, 3])) + Srv * dv[0, 3] - Spua * dv[
             0, 4] + ppc) / ypv  # PV flow
+        
         dvq[0, 8] = q[0, 3] - q[0, 4] - q[0, 7]  # Pulmonary Artery volume
+        
         P_0d[0, 7] = Epua * Zpua + Spua * dv[0, 4] + pit  # Pulmonary Artery Pressure
-        dvq[0, 9] = (Epua * Zpua - Epuc * Zpuc - Rpua * q[0, 4] + Spua * dv[0, 4] - Spuc * dv[
-            0, 5]) / ypua  # Pulmonary Artery Flow
+        dvq[0, 9] = (Epua * Zpua - Epuc * Zpuc - Rpua * q[0, 4] + Spua * dv[0, 4] - Spuc * dv[0, 5]) / ypua  # Pulmonary Artery Flow
+
         dvq[0, 10] = q[0, 4] - q[0, 5]  # Pulmonary Capillary volume
         P_0d[0, 9] = Epuc * Zpuc + Spuc * dv[0, 5] + pit  # Pulmonary Capillary Pressure
         dvq[0, 11] = (Epuc * Zpuc - Epuv * Zpuv - Rpuc * q[0, 5] + Spuc * dv[0, 5] - Spuv * dv[
@@ -96,6 +103,7 @@ def lumped(HR, ncyc, dt, *param):
         P_0d[0, 20] = plv + Slv * dv[0, 10] + ppc + pit  # LV Pressure
         dvq[0, 22] = (plv - v[0, 11] / Caor - Rav * q[0, 11] - (bav * q[0, 11]) * np.abs(q[0, 11]) + Slv * dv[
             0, 10] - Saor * dv[0, 11] + ppc + pit) / yav  # Aortic Flow
+        0
         # Adjust the state of cardiac valve
         if Aav == 0.0 and q[0, 11] <= 0.000000001:
             dvq[0, 22] = 0.0
@@ -378,6 +386,8 @@ def lumped(HR, ncyc, dt, *param):
     Sven = ve[0]
     Svca = ve[1]
     qco = 0.0
+
+
     # ------------------------------------------------------------------------------------------------
     HR = HR
     Tduration = 60 / HR                                # input('Please specify cardiac duration(s)')
@@ -423,20 +433,24 @@ def lumped(HR, ncyc, dt, *param):
         cn += 1
         tcr = cn * dt % Tduration
         t = cn * dt
+
         # c.... Compute the pulmonary elastances
         Epua = Ecal(Epua0, Zpua, v[0, 4])
         Epuc = Ecal(Epuc0, Zpuc, v[0, 5])
         Epuv = Ecal(Epuv0, Zpuv, v[0, 6])
         Epwc = Ecal(Epwc0, Zpwc, v[0, 7])
         Epwv = Ecal(Epwv0, Zpwv, v[0, 8])
+
         # c.....Update nolinear cardiac parameters
         if tcr == 0.0:
             FL = 1.0 - (result[0, 21] / Vmax)        # Left ventricle scaling factor
             FR1 = 1.0 - (result[0, 6] / Vmax)        # Right ventricle scaling factor
+        
         Lvecal()                                     # LV elastance function calling
         Laecal()                                     # LA elastance function calling
         Rvecal()                                     # RV elastance function calling
         Raecal()                                     # RA elastance function calling
+        
         # Spetum cross talk pressure calculations
         cklr = erv / (Es + erv)
         ckrl = elv / (Es + elv)
@@ -458,11 +472,13 @@ def lumped(HR, ncyc, dt, *param):
         # c.....Implement fourth - order Runge - Kutta method
         resultcr[0, :101] = result[0, :101]
         rukuk = cardiac_state(resultcr)
+        
         # c.....Update variables with Runge-Kutta method
         for j in np.arange(29):
             result[ncountadd, j] = result[ncount, j] + (
                     rukuk[0, j] + 2.0 * (rukuk[1, j] + rukuk[2, j]) + rukuk[3, j]) / 6.0
         delta = 0.00000001
+       
         # update all four cardiac valve flow as zero when they were closed
         if Aav == 0.0 and resultcr[0, 22] <= delta:
             resultcr[0, 22] = 0.0
@@ -521,5 +537,5 @@ if __name__ =="__main__":
     end = time.time()
     print('Total time: ',(end-st))
     total = len(t)
-    plt.plot(t, x[:total, 20])
+    plt.plot(t, x[:total, 1])
     plt.show()
