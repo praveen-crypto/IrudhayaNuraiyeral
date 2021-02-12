@@ -1,12 +1,11 @@
 import os
 
 import numpy as np
-from julia import Main
+
 from scipy.integrate import solve_ivp
 
 import arterymodel as am
 
-Main.include("baroreflex_model.jl")
 
 def calc(HR):
     try:
