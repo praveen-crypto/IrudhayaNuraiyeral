@@ -385,8 +385,8 @@ if __name__ == "__main__":
     import time
     import Stenosis
     import matplotlib.pyplot as plt
-    from julia import Main
-    Main.include("baroreflex_model.jl")
+    
+    
     try:
         start = time.time()
         stn_dat = {'0': None, '1': 3, '7': 4, '13':6, '3': 7, '11': 20, '10': 0, '51': 0, '46': 0,
